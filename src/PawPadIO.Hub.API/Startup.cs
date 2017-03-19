@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace Api
 {
@@ -27,8 +28,21 @@ namespace Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvcCore()
+                .AddApiExplorer()
                 .AddAuthorization()
                 .AddJsonFormatters();
+
+            // Register the Swagger generator, defining one or more Swagger documents
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info {
+                    Title = "PawPad.IO Hub API",
+                    Version = "v1",
+                    TermsOfService = "None",
+                    Contact = new Contact { Name = "PawPad.IO GitHub Issues", Url = "https://github.com/PawPadIO/Hub/issues" },
+                    License = new License { Name = "MIT", Url = "https://github.com/PawPadIO/Hub/blob/master/LICENSE" },
+                });
+            });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -43,6 +57,15 @@ namespace Api
             });
 
             app.UseMvc();
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PawPad.IO Hub API v1");
+            });
         }
     }
 }

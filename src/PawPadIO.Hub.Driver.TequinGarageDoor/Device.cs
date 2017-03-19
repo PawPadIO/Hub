@@ -9,8 +9,8 @@ using PawPadIO.Hub.Plugin.Interfaces.LightBulb;
 
 namespace PawPadIO.Hub.Driver.TequinGarageDoor
 {
-    public class Device
-        : IDoorDriver, ILightBulbDriver,
+    public class Device : 
+        IDoorDriver, ILightBulbDriver,
         IDoorAutomatedCapability
     {
         public Device()
@@ -37,6 +37,21 @@ namespace PawPadIO.Hub.Driver.TequinGarageDoor
         }
 
         public Task OnRegisterAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CloseDoor(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task OpenDoor(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RequestDoorStatus(CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }

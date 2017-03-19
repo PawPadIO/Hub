@@ -10,7 +10,7 @@ namespace PawPadIO.Hub.Driver.PhillipsHue
 {
     public class Device : 
         ILightBulbDriver,
-        ILightBulbBrightnessCapability, ILightBulbHueCapability
+        ILightBulbBrightnessCapability, ILightBulbHueCapability, ILightBulbTemperatureCapability
     {
         public Device()
         {

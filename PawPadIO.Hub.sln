@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0CC164E8-1269-43EB-974E-9442A61F9CA9}"
 EndProject
@@ -9,22 +9,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "temp", "temp", "{A5849200-5726-4017-9594-250622311331}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PawPadIO.Hub.API", "src\PawPadIO.Hub.API\PawPadIO.Hub.API.xproj", "{6D982C72-6C81-4657-BB3C-4BA7DF089D1C}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PawPadIO.Hub.Auth", "src\PawPadIO.Hub.Auth\PawPadIO.Hub.Auth.xproj", "{74894537-E514-4087-B6E1-B9D77A2ED34C}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PawPadIO.Hub.Plugin.Interfaces", "src\PawPadIO.Hub.Plugin.Interfaces\PawPadIO.Hub.Plugin.Interfaces.xproj", "{2EF960BC-208A-4EBF-A17D-FEAC2DE27E45}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Devices", "Devices", "{4DF9EAB8-D35F-4685-B18D-AD15A30D1F24}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PawPadIO.Hub.Driver.PhillipsHue", "src\PawPadIO.Hub.Driver.PhillipsHue\PawPadIO.Hub.Driver.PhillipsHue.xproj", "{B98A19DE-34AE-4FD2-A632-E51E11A88B6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PawPadIO.Hub.API", "src\PawPadIO.Hub.API\PawPadIO.Hub.API.csproj", "{6D982C72-6C81-4657-BB3C-4BA7DF089D1C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PawPadIO.Hub.Driver.TequinGarageDoor", "src\PawPadIO.Hub.Driver.TequinGarageDoor\PawPadIO.Hub.Driver.TequinGarageDoor.xproj", "{83ABEF54-DE5C-4AF9-AE0F-B7EC21A98192}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PawPadIO.Hub.Auth", "src\PawPadIO.Hub.Auth\PawPadIO.Hub.Auth.csproj", "{74894537-E514-4087-B6E1-B9D77A2ED34C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PawPadIO.Hub.Plugin.Interfaces", "src\PawPadIO.Hub.Plugin.Interfaces\PawPadIO.Hub.Plugin.Interfaces.csproj", "{2EF960BC-208A-4EBF-A17D-FEAC2DE27E45}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PawPadIO.Hub.Driver.PhillipsHue", "src\PawPadIO.Hub.Driver.PhillipsHue\PawPadIO.Hub.Driver.PhillipsHue.csproj", "{B98A19DE-34AE-4FD2-A632-E51E11A88B6B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PawPadIO.Hub.Driver.TequinGarageDoor", "src\PawPadIO.Hub.Driver.TequinGarageDoor\PawPadIO.Hub.Driver.TequinGarageDoor.csproj", "{83ABEF54-DE5C-4AF9-AE0F-B7EC21A98192}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,10 +56,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{4DF9EAB8-D35F-4685-B18D-AD15A30D1F24} = {0CC164E8-1269-43EB-974E-9442A61F9CA9}
 		{6D982C72-6C81-4657-BB3C-4BA7DF089D1C} = {0CC164E8-1269-43EB-974E-9442A61F9CA9}
 		{74894537-E514-4087-B6E1-B9D77A2ED34C} = {0CC164E8-1269-43EB-974E-9442A61F9CA9}
 		{2EF960BC-208A-4EBF-A17D-FEAC2DE27E45} = {0CC164E8-1269-43EB-974E-9442A61F9CA9}
-		{4DF9EAB8-D35F-4685-B18D-AD15A30D1F24} = {0CC164E8-1269-43EB-974E-9442A61F9CA9}
 		{B98A19DE-34AE-4FD2-A632-E51E11A88B6B} = {4DF9EAB8-D35F-4685-B18D-AD15A30D1F24}
 		{83ABEF54-DE5C-4AF9-AE0F-B7EC21A98192} = {4DF9EAB8-D35F-4685-B18D-AD15A30D1F24}
 	EndGlobalSection
