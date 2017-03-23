@@ -3,12 +3,14 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PawPadIO.Hub.Api.Data;
 using Swashbuckle.AspNetCore.Swagger;
 
-namespace Api
+namespace PawPadIO.Hub.Api
 {
     public class Startup
     {
@@ -27,6 +29,9 @@ namespace Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<ApiDbContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddMvcCore()
                 .AddApiExplorer()
                 .AddAuthorization()

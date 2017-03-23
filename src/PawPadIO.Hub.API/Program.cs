@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Api
+namespace PawPadIO.Hub.Api
 {
     public class Program
     {

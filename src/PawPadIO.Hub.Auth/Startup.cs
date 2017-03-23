@@ -60,11 +60,11 @@ namespace PawPadIO.Hub.Auth
             services.AddTransient<IPasswordHasher<ApplicationUser>, Argon2iPasswordHashingService>();
 
             // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<AuthDbContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddEntityFrameworkStores<AuthDbContext>()
                 .AddDefaultTokenProviders();
 
             services.AddMvc();
