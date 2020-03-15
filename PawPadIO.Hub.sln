@@ -9,6 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PawPadIO.Hub.Domain", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PawPadIO.Hub.GraphQL", "src\PawPadIO.Hub.GraphQL\PawPadIO.Hub.GraphQL.csproj", "{C42AA967-8729-46B6-B33A-CE61F158EB84}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F4DC5E1C-9D16-483E-8CD7-4EA77475F9CD}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
