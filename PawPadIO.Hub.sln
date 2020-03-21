@@ -11,8 +11,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PawPadIO.Hub.GraphQL", "src
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F4DC5E1C-9D16-483E-8CD7-4EA77475F9CD}"
 	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		.issuetracker = .issuetracker
+		CODEOWNERS = CODEOWNERS
+		LICENSE = LICENSE
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global
