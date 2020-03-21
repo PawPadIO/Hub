@@ -3,15 +3,18 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 // Third Party
 using GraphQL;
 using GraphQL.Server;
 using GraphQL.Types;
+using GraphQL.Validation;
+using GraphQL.Authorization;
 
 // Internal
-
+using PawPadIO.Hub.GraphQL;
 
 namespace PawPadIO.Hub.API
 {
@@ -27,11 +30,28 @@ namespace PawPadIO.Hub.API
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add required services
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            // Add GraphQL authorisation services
+            services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+
             // Add GraphQL schema
-            services.AddTransient<GraphQL.Query>();
-            services.AddTransient<GraphQL.Mutation>();
-            services.AddTransient<GraphQL.Subscription>();
+            services.AddTransient<Query>();
+            services.AddTransient<Mutation>();
+            services.AddTransient<Subscription>();
             services.AddTransient<ISchema, GraphQL.Schema>();
+
+            // TODO: Wrap this in an extension method so it doesn't look so naff
+            services.TryAddSingleton(s =>
+            {
+                var authSettings = new AuthorizationSettings();
+                authSettings.AddPolicy("ResidentPolicy", _ => _.RequireClaim("UserType", "Resident"));
+                authSettings.AddPolicy("VerifiedGuestPolicy", _ => _.RequireClaim("UserType", "VerifiedGuest"));
+                authSettings.AddPolicy("GuestPolicy", _ => _.RequireClaim("UserType", "Guest"));
+                return authSettings;
+            });
 
             // Add GraphQL Service
             services.AddSingleton<IDependencyResolver>(c => new FuncDependencyResolver(type => c.GetRequiredService(type)));
@@ -40,6 +60,7 @@ namespace PawPadIO.Hub.API
                 options.EnableMetrics = true; // TODO: Allow this to be configurable via .toml, warn for security
                 options.ExposeExceptions = _environment.IsDevelopment();
             })
+            .AddUserContextBuilder(context => new UserContext { User = context.User })
             .AddWebSockets();
         }
 
