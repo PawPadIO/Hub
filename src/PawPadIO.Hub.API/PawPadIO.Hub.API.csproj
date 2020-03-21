@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="3.4.0" />
     <PackageReference Include="GraphQL.Server.Transports.WebSockets" Version="3.4.0" />
+    <PackageReference Include="IdentityServer4" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup>

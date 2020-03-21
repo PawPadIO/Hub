@@ -9,4 +9,8 @@
     <Folder Include="Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="IdentityServer4.Storage" Version="3.1.2" />
+  </ItemGroup>
+
 </Project>

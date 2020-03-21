@@ -1,4 +1,4 @@
-// System and Microsoft
+﻿// System and Microsoft
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +15,7 @@ using GraphQL.Authorization;
 
 // Internal
 using PawPadIO.Hub.GraphQL;
+using PawPadIO.Hub.Domain;
 
 namespace PawPadIO.Hub.API
 {
@@ -32,6 +33,14 @@ namespace PawPadIO.Hub.API
         {
             // Add required services
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            // Add IdentityServer configuration
+            // TODO: Build this from data store
+            services.AddIdentityServer()
+                .AddInMemoryApiResources(TempConfig.Apis)
+                .AddInMemoryClients(TempConfig.Clients)
+                //.AddTestUsers(TempConfig.TestUsers)
+                .AddDeveloperSigningCredential(persistKey: false); //TODO: Replace this with an ECC key
 
             // Add GraphQL authorisation services
             services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
@@ -71,6 +80,9 @@ namespace PawPadIO.Hub.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Use IdentityServer4 middleware
+            app.UseIdentityServer();
 
             // Use GraphQL Transports middleware
             app.UseWebSockets();
