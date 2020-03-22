@@ -63,12 +63,12 @@ namespace PawPadIO.Hub.API
             });
 
             // Add GraphQL Service
-            services.AddSingleton<IDependencyResolver>(c => new FuncDependencyResolver(type => c.GetRequiredService(type)));
             services.AddGraphQL(options =>
             {
                 options.EnableMetrics = true; // TODO: Allow this to be configurable via .toml, warn for security
                 options.ExposeExceptions = _environment.IsDevelopment();
             })
+            .AddSystemTextJson(deserializerSettings => { }, serializerSettings => { })
             .AddUserContextBuilder(context => new UserContext { User = context.User })
             .AddWebSockets();
         }

@@ -1,17 +1,16 @@
-﻿using System.Linq;
+﻿using System;
 
-using GraphQL;
+using GraphQL.Utilities;
 
 namespace PawPadIO.Hub.GraphQL
 { 
     public class Schema : global::GraphQL.Types.Schema
     {
-        public Schema(Query query, Mutation mutation, Subscription subscription, IDependencyResolver resolver)
+        public Schema(IServiceProvider provider) : base(provider)
         {
-            Query = query.Fields.Any() ? query : null;
-            Mutation = mutation.Fields.Any() ? mutation : null;
-            Subscription = subscription.Fields.Any() ? subscription : null;
-            DependencyResolver = resolver;
+            Query = provider.GetRequiredService<Query>();
+            Mutation = provider.GetRequiredService<Mutation>();
+            Subscription = provider.GetRequiredService<Subscription>();
         }
     }
 }
