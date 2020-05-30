@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="3.0.0-preview-1490" />
-    <PackageReference Include="GraphQL-Parser" Version="5.1.0" />
-    <PackageReference Include="GraphQL.Authorization" Version="3.0.39-preview-39" />
+    <PackageReference Include="GraphQL" Version="3.0.0-preview-1648" />
+    <PackageReference Include="GraphQL-Parser" Version="5.1.2" />
+    <PackageReference Include="GraphQL.Authorization" Version="3.0.40-preview-40" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
   </ItemGroup>
 
