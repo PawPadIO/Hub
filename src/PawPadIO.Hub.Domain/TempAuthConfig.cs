@@ -32,7 +32,25 @@ namespace PawPadIO.Hub.Domain
 
                     // scopes that client has access to
                     AllowedScopes = { "PawPadIO.Hub.API" }
-                }
+                },
+                 new Client
+                {
+                    ClientId = "devclientuser",
+
+                    // no interactive user, use the clientid/secret for authentication
+                    AllowedGrantTypes = new[] { GrantType.AuthorizationCode }, // GrantTypes.ClientCredentials,
+
+                    // secret for authentication
+                    ClientSecrets =
+                    {
+                        new Secret("secret".ToSha256())
+                    },
+
+                    RedirectUris = { "https://fake.infursec.furry.nz/got-the-code" },
+
+                    // scopes that client has access to
+                    AllowedScopes = { "PawPadIO.Hub.API" }
+                },
             };
 
         //public static List<TestUser> TestUsers =>

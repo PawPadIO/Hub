@@ -2,30 +2,41 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 // Third Party
 using GraphQL;
+using GraphQL.Authorization;
 using GraphQL.Server;
 using GraphQL.Types;
 using GraphQL.Validation;
-using GraphQL.Authorization;
+using IdentityServer4.AccessTokenValidation;
 
 // Internal
 using PawPadIO.Hub.GraphQL;
 using PawPadIO.Hub.Domain;
+using PawPadIO.Hub.Domain.DAL;
+using Microsoft.EntityFrameworkCore;
+using PawPadIO.Hub.Domain.Models;
+using IdentityServer4;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Tokens;
+using PawPadIO.Hub.API.Auth;
 
 namespace PawPadIO.Hub.API
 {
     public class Startup
     {
-        // Add IWebHostEnvironment to private field so we can configure some services based on host environment (Development mode, etc)
-        private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _environment; // Add IWebHostEnvironment to private field so we can configure some services based on host environment (Development mode, etc)
 
-        public Startup(IWebHostEnvironment environment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
+            _configuration = configuration;
             _environment = environment;
         }
 
@@ -34,11 +45,48 @@ namespace PawPadIO.Hub.API
             // Add required services
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+            services.AddDbContext<PawPadIODbContext>(options =>
+            {
+                options.UseSqlite("Data Source=sqlite.db"); // TODO: Allow other DBMSes to be used
+            });
+
+            // Adds a Secure Data Format handler to persist the state parameter into the server-side IDistributedCache
+            services.AddOidcStateDataFormatterCache();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = "oidc";
+            })
+            .AddCookie("Cookies")
+            .AddOpenIdConnect("oidc", options =>
+            {
+                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+
+                options.Authority = "https://furry.nz/openid/";
+
+                options.ClientId = "";
+                options.ClientSecret = "";
+                options.ResponseType = "code";
+
+                options.GetClaimsFromUserInfoEndpoint = true;
+                options.SaveTokens = true;
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = "name",
+                    RoleClaimType = "role",
+                };
+
+                options.Events.OnUserInformationReceived = NzFursOpenIdConnectEvents.OnUserInformationReceived;
+            });
+
             // Add IdentityServer configuration
             // TODO: Build this from data store
             services.AddIdentityServer()
                 .AddInMemoryApiResources(TempConfig.Apis)
                 .AddInMemoryClients(TempConfig.Clients)
+                //.AddAspNetIdentity<User>()
                 //.AddTestUsers(TempConfig.TestUsers)
                 .AddDeveloperSigningCredential(persistKey: false); //TODO: Replace this with an ECC key
 
@@ -80,6 +128,9 @@ namespace PawPadIO.Hub.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Use Authentication and Authorisation handlers
+            app.UseAuthentication();
 
             // Use IdentityServer4 middleware
             app.UseIdentityServer();

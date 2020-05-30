@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Authentication;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using PawPadIO.Hub.Domain.DAL;
 
 namespace PawPadIO.Hub.API
 {
@@ -14,7 +12,15 @@ namespace PawPadIO.Hub.API
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            // Get the HTTP Server set up
+            var host = CreateHostBuilder(args).Build();
+
+            // Check to see if the DB has been created yet (do this if we haven't already)
+            // TODO: Migrations
+            CreateDbIfNotExists(host);
+
+            // Run the HTTP Server
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -42,5 +48,22 @@ namespace PawPadIO.Hub.API
                         });
                     });
                 });
+
+        private static void CreateDbIfNotExists(IHost host)
+        {
+            using var scope = host.Services.CreateScope();
+            var services = scope.ServiceProvider;
+
+            try
+            {
+                var context = services.GetRequiredService<PawPadIODbContext>();
+                PawPadIODbContextInitialiser.Initialise(context);
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occured while creating the database.");
+            }
+        }
     }
 }
