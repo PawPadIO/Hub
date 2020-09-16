@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Version>0.1.0</Version>
+    <Authors>Roman Vaughan, TC Fox</Authors>
+    <Company>PawPadIO</Company>
+    <Description>Base library that contains the core types for creating drivers and interfacing with PawPadIO</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" Version="4.9.2" />
+    <PackageReference Include="System.ComponentModel" Version="4.3.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+  </ItemGroup>
+
+</Project>
