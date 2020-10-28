@@ -61,6 +61,11 @@
     </None>
   </ItemGroup>
    
+  <ItemGroup>
+    <ProjectReference Include="..\PawPadIO.Hub.GraphQL\PawPadIO.Hub.GraphQL.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
    <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('node_modules') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">

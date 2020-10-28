@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using IdentityServer4.Services;
 using PawPadIO.Hub.Web.Models;
 using PawPadIO.Hub.Web.Data;
@@ -23,8 +18,11 @@ using PawPadIO.Hub.Web.Services;
 using PawPadIO.Hub.Web.Filters;
 using PawPadIO.Hub.Web.Services.Certificate;
 using Serilog;
-using Microsoft.AspNetCore.Http;
 using Fido2NetLib;
+using GraphQL.Types;
+using GraphQL.Server;
+using PawPadIO.Hub.Web.ServiceDescriptors;
+using System.Net.Http;
 
 namespace PawPadIO.Hub.Web
 {
@@ -41,23 +39,15 @@ namespace PawPadIO.Hub.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<StsConfig>(_configuration.GetSection("StsConfig"));
             services.Configure<EmailSettings>(_configuration.GetSection("EmailSettings"));
             services.AddTransient<IProfileService, IdentityWithAdditionalClaimsProfileService>();
             services.AddTransient<IEmailSender, EmailSender>();
 
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
-                options.OnAppendCookie = cookieContext =>
-                    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
-                options.OnDeleteCookie = cookieContext =>
-                    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
-            });
+            services.AddCookiePolicyOptions();
 
             var x509Certificate2Certs = GetCertificates(_environment, _configuration)
                 .GetAwaiter().GetResult();
-            AddLocalizationConfigurations(services);
+            services.AddLocalizationConfigurations();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
@@ -68,36 +58,54 @@ namespace PawPadIO.Hub.Web
                 .AddDefaultTokenProviders()
                 .AddTokenProvider<Fifo2UserTwoFactorTokenProvider>("FIDO2");
 
-            services.AddAuthentication()
-                 .AddOpenIdConnect("aad", "Login with Azure AD", options => // Microsoft common
-                 {
-                     //  https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
-                     options.ClientId = "your_client_id"; // ADD APP Registration ID
-                     options.ClientSecret = "your_secret"; // ADD APP Registration secret
-                     options.SignInScheme = "Identity.External";
-                     options.RemoteAuthenticationTimeout = TimeSpan.FromSeconds(30);
-                     options.Authority = "https://login.microsoftonline.com/common/v2.0/";
-                     options.ResponseType = "code";
-                     options.UsePkce = false; // live does not support this yet
-                     options.Scope.Add("profile");
-                     options.Scope.Add("email");
-                     options.TokenValidationParameters = new TokenValidationParameters
-                     {
-                         // ALWAYS VALIDATE THE ISSUER IF POSSIBLE !!!!
-                         ValidateIssuer = false,
-                         // ValidIssuers = new List<string> { "tenant..." },
-                         NameClaimType = "email",
-                     };
-                     options.CallbackPath = "/signin-microsoft";
-                     options.Prompt = "login"; // login, consent
-                 });
+            // Enable to prevent ASP.NET from renaming scopes to stupid names
+            //JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-            services.AddAntiforgery(options =>
+            services.AddAuthentication()
+                .AddJwtBearer("token", options =>
+                {
+                    options.Authority = "https://127.0.0.1:5001"; // TODO: Set this properly
+                    options.Audience = "nz.furry.infursec.hub"; // TODO: Set this properly
+                    options.RequireHttpsMetadata = false;
+                    if (_environment.IsDevelopment())
+                    {
+                        // Allow certificates that are untrusted/invalid
+                        options.BackchannelHttpHandler = new HttpClientHandler
+                        {
+                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                        };
+                    }
+                });
+
+            services.AddAuthorization(options =>
             {
-                options.SuppressXFrameOptionsHeader = true;
-                options.Cookie.SameSite = SameSiteMode.Strict;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.AddPolicy("graphql", policy => // HACK: Just a test one, remove this later
+                {
+                    policy.AuthenticationSchemes.Clear();
+                    policy.AddAuthenticationSchemes("token");
+                    policy.RequireAuthenticatedUser();
+                });
+                options.AddPolicy("ResidentPolicy", policy =>
+                {
+                    policy.AuthenticationSchemes.Clear();
+                    policy.AddAuthenticationSchemes("token");
+                    policy.RequireClaim("UserType", "Resident");
+                });
+                options.AddPolicy("VerifiedGuestPolicy", policy =>
+                {
+                    policy.AuthenticationSchemes.Clear();
+                    policy.AddAuthenticationSchemes("token");
+                    policy.RequireClaim("UserType", "VerifiedGuest");
+                });
+                options.AddPolicy("GuestPolicy", policy =>
+                {
+                    policy.AuthenticationSchemes.Clear();
+                    policy.AddAuthenticationSchemes("token");
+                    policy.RequireClaim("UserType", "Guest");
+                });
             });
+
+            services.AddWebSecurity();
 
             services.AddControllersWithViews(options =>
                 {
@@ -112,18 +120,17 @@ namespace PawPadIO.Hub.Web
                         return factory.Create("SharedResource", assemblyName.Name);
                     };
                 })
-                .AddNewtonsoftJson();
-
-            var stsConfig = _configuration.GetSection("StsConfig");
+                .AddNewtonsoftJson(); // TODO: We want to remove this if we can, we should use System.Text.Json
 
             var identityServer = services.AddIdentityServer()
                 .AddSigningCredential(x509Certificate2Certs.ActiveCertificate)
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApiResources())
                 .AddInMemoryApiScopes(Config.GetApiScopes())
-                .AddInMemoryClients(Config.GetClients(stsConfig))
+                .AddInMemoryClients(Config.GetClients())
                 .AddAspNetIdentity<ApplicationUser>()
-                .AddProfileService<IdentityWithAdditionalClaimsProfileService>();
+                .AddProfileService<IdentityWithAdditionalClaimsProfileService>()
+                .AddJwtBearerClientAuthentication();
 
             if (x509Certificate2Certs.SecondaryCertificate != null)
             {
@@ -134,13 +141,8 @@ namespace PawPadIO.Hub.Web
             services.AddScoped<Fido2Storage>();
             // Adds a default in-memory implementation of IDistributedCache.
             services.AddDistributedMemoryCache();
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(2);
-                options.Cookie.HttpOnly = true;
-                options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            });
+
+            services.AddGraphQLServer(exposeExceptionStackTrace: _environment.IsDevelopment());
         }
 
         public void Configure(IApplicationBuilder app)
@@ -204,9 +206,15 @@ namespace PawPadIO.Hub.Web
             app.UseRouting();
 
             app.UseIdentityServer();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseSession();
+
+            // Use GraphQL Transports middleware
+            app.UseWebSockets();
+            app.UseGraphQLWebSockets<ISchema>("/graphql");
+            app.UseGraphQL<ISchema>("/graphql");
 
             app.UseEndpoints(endpoints =>
             {
@@ -237,88 +245,6 @@ namespace PawPadIO.Hub.Web
                 certificateConfiguration).ConfigureAwait(false);
 
             return certs;
-        }
-
-        private static void AddLocalizationConfigurations(IServiceCollection services)
-        {
-            services.AddSingleton<LocService>();
-            services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-            services.Configure<RequestLocalizationOptions>(
-                options =>
-                {
-                    var supportedCultures = new List<CultureInfo>
-                        {
-                            new CultureInfo("en-US"),
-                            new CultureInfo("de-DE"),
-                            new CultureInfo("de-CH"),
-                            new CultureInfo("it-IT"),
-                            new CultureInfo("gsw-CH"),
-                            new CultureInfo("fr-FR"),
-                            new CultureInfo("zh-Hans"),
-                            new CultureInfo("ga-IE"),
-                            new CultureInfo("es-MX")
-                        };
-
-                    options.DefaultRequestCulture = new RequestCulture(culture: "de-DE", uiCulture: "de-DE");
-                    options.SupportedCultures = supportedCultures;
-                    options.SupportedUICultures = supportedCultures;
-
-                    var providerQuery = new LocalizationQueryProvider
-                    {
-                        QueryParameterName = "ui_locales"
-                    };
-
-                    options.RequestCultureProviders.Insert(0, providerQuery);
-                });
-        }
-
-        private static void CheckSameSite(HttpContext httpContext, CookieOptions options)
-        {
-            if (options.SameSite == SameSiteMode.None)
-            {
-                var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
-                if (DisallowsSameSiteNone(userAgent))
-                {
-                    // For .NET Core < 3.1 set SameSite = (SameSiteMode)(-1)
-                    options.SameSite = SameSiteMode.Unspecified;
-                }
-            }
-        }
-
-        private static bool DisallowsSameSiteNone(string userAgent)
-        {
-            // Cover all iOS based browsers here. This includes:
-            // - Safari on iOS 12 for iPhone, iPod Touch, iPad
-            // - WkWebview on iOS 12 for iPhone, iPod Touch, iPad
-            // - Chrome on iOS 12 for iPhone, iPod Touch, iPad
-            // All of which are broken by SameSite=None, because they use the iOS networking stack
-            if (userAgent.Contains("CPU iPhone OS 12") || userAgent.Contains("iPad; CPU OS 12"))
-            {
-                return true;
-            }
-
-            // Cover Mac OS X based browsers that use the Mac OS networking stack. This includes:
-            // - Safari on Mac OS X.
-            // This does not include:
-            // - Chrome on Mac OS X
-            // Because they do not use the Mac OS networking stack.
-            if (userAgent.Contains("Macintosh; Intel Mac OS X 10_14") &&
-                userAgent.Contains("Version/") && userAgent.Contains("Safari"))
-            {
-                return true;
-            }
-
-            // Cover Chrome 50-69, because some versions are broken by SameSite=None,
-            // and none in this range require it.
-            // Note: this covers some pre-Chromium Edge versions,
-            // but pre-Chromium Edge does not require SameSite=None.
-            if (userAgent.Contains("Chrome/5") || userAgent.Contains("Chrome/6"))
-            {
-                return true;
-            }
-
-            return false;
         }
     }
 }
