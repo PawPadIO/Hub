@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="3.0.0.2026" />
-    <PackageReference Include="GraphQL.Authorization" Version="3.0.43" />
+    <PackageReference Include="GraphQL" Version="3.2.0" />
+    <PackageReference Include="GraphQL.Authorization" Version="3.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
   </ItemGroup>
 

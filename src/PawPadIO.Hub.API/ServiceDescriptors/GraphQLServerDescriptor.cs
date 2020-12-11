@@ -6,11 +6,11 @@ using GraphQL.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace PawPadIO.Hub.Web.ServiceDescriptors
+namespace PawPadIO.Hub.API.ServiceDescriptors
 {
     public static class GraphQLServerDescriptor
     {
-        public static void AddGraphQLServer(this IServiceCollection services, bool exposeExceptionStackTrace)
+        public static void AddGraphQLServer(this IServiceCollection services, bool exposeDebugInfo = false)
         {
             // Add GraphQL schema
             services.AddTransient<PawPadIO.Hub.GraphQL.Query>();
@@ -25,10 +25,10 @@ namespace PawPadIO.Hub.Web.ServiceDescriptors
             // Add GraphQL Service
             services.AddGraphQL(options =>
             {
-                options.EnableMetrics = true; // TODO: Allow this to be configurable via .toml, warn for security
+                options.EnableMetrics = exposeDebugInfo; // TODO: Allow this to be configurable via .toml, warn for security
             })
             .AddSystemTextJson(deserializerSettings => { }, serializerSettings => { })
-            .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = exposeExceptionStackTrace)
+            .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = exposeDebugInfo)
             //.AddGraphQLAuthorization(options =>
             //{
             //    options.AddPolicy("graphql", policy => // Just a test one

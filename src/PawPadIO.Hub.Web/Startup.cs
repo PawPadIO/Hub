@@ -19,8 +19,6 @@ using PawPadIO.Hub.Web.Filters;
 using PawPadIO.Hub.Web.Services.Certificate;
 using Serilog;
 using Fido2NetLib;
-using GraphQL.Types;
-using GraphQL.Server;
 using PawPadIO.Hub.Web.ServiceDescriptors;
 using System.Net.Http;
 
@@ -141,8 +139,6 @@ namespace PawPadIO.Hub.Web
             services.AddScoped<Fido2Storage>();
             // Adds a default in-memory implementation of IDistributedCache.
             services.AddDistributedMemoryCache();
-
-            services.AddGraphQLServer(exposeExceptionStackTrace: _environment.IsDevelopment());
         }
 
         public void Configure(IApplicationBuilder app)
@@ -210,11 +206,6 @@ namespace PawPadIO.Hub.Web
             app.UseAuthorization();
 
             app.UseSession();
-
-            // Use GraphQL Transports middleware
-            app.UseWebSockets();
-            app.UseGraphQLWebSockets<ISchema>("/graphql");
-            app.UseGraphQL<ISchema>("/graphql");
 
             app.UseEndpoints(endpoints =>
             {

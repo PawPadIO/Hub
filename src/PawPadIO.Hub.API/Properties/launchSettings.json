@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "PawPadIO.Hub.API": {
+      "commandName": "Project",
+      "applicationUrl": "https://localhost:7448",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -13,9 +13,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="4.0.1" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="4.0.1" />
-    <PackageReference Include="GraphQL.Server.Transports.WebSockets" Version="4.0.1" />
     <PackageReference Include="IdentityServer4" Version="4.1.1" />
     <PackageReference Include="IdentityServer4.AspNetIdentity" Version="4.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.9" />
@@ -43,7 +40,6 @@
     <PackageReference Include="Fido2" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.9" />
-    <PackageReference Include="GraphQL.Server.Authorization.AspNetCore" Version="4.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,7 +58,7 @@
   </ItemGroup>
    
   <ItemGroup>
-    <ProjectReference Include="..\PawPadIO.Hub.GraphQL\PawPadIO.Hub.GraphQL.csproj">
+    <ProjectReference Include="..\PawPadIO.Hub.Domain\PawPadIO.Hub.Domain.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>
