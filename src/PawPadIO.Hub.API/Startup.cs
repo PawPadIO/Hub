@@ -1,13 +1,23 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Threading.Tasks;
 using GraphQL.Server;
 using GraphQL.Types;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
+using PawPadIO.Hub.API.Auth;
 using PawPadIO.Hub.API.ServiceDescriptors;
+using PawPadIO.Hub.Domain.Data;
+using PawPadIO.Hub.Domain.Models;
+using PawPadIO.Hub.Domain.Services;
 
 namespace PawPadIO.Hub.API
 {
@@ -25,50 +35,78 @@ namespace PawPadIO.Hub.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<IUserService<HubUser>, PawPadIOUserService>();
+
+            // Use the JWT standard claim names, not the silly xmlsoap URIs
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            // Show full IdentityModel logs if in Development environment
+            IdentityModelEventSource.ShowPII = _environment.IsDevelopment();
+
+            services.AddDbContext<HubDbContext>(options =>
+                options.UseSqlite(_configuration.GetConnectionString("DefaultConnection")));
 
             services.AddAuthentication(options =>
             {
-                
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                .AddJwtBearer("token", options =>
+            .AddJwtBearer(options =>
+            {
+                options.Authority = "https://127.0.0.1:5001"; // TODO: Set this properly
+                options.Audience = "nz.furry.infursec.hub"; // TODO: Set this properly
+                options.RequireHttpsMetadata = false;
+                
+                if (_environment.IsDevelopment())
                 {
-                    options.Authority = "https://127.0.0.1:5001"; // TODO: Set this properly
-                    options.Audience = "nz.furry.infursec.hub"; // TODO: Set this properly
-                    options.RequireHttpsMetadata = false;
-                    if (_environment.IsDevelopment())
+                    // Allow certificates that are untrusted/invalid
+                    options.BackchannelHttpHandler = new HttpClientHandler
                     {
-                        // Allow certificates that are untrusted/invalid
-                        options.BackchannelHttpHandler = new HttpClientHandler
-                        {
-                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                        };
-                    }
-                });
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    };
+                    options.IncludeErrorDetails = true;
+                }
+                else
+                {
+                    options.IncludeErrorDetails = false;
+                }
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = "given_name",
+                    RoleClaimType = "role",
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = PawPadIOJwtBearerEvents.OnTokenValidated,
+                };
+            });
 
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("graphql", policy => // HACK: Just a test one, remove this later
                 {
                     policy.AuthenticationSchemes.Clear();
-                    policy.AddAuthenticationSchemes("token");
+                    policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
                 });
                 options.AddPolicy("ResidentPolicy", policy =>
                 {
                     policy.AuthenticationSchemes.Clear();
-                    policy.AddAuthenticationSchemes("token");
+                    policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireClaim("UserType", "Resident");
                 });
                 options.AddPolicy("VerifiedGuestPolicy", policy =>
                 {
                     policy.AuthenticationSchemes.Clear();
-                    policy.AddAuthenticationSchemes("token");
+                    policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireClaim("UserType", "VerifiedGuest");
                 });
                 options.AddPolicy("GuestPolicy", policy =>
                 {
                     policy.AuthenticationSchemes.Clear();
-                    policy.AddAuthenticationSchemes("token");
+                    policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireClaim("UserType", "Guest");
                 });
             });
@@ -85,6 +123,7 @@ namespace PawPadIO.Hub.API
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             // Use GraphQL Transports middleware
