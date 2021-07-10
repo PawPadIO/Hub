@@ -1,10 +1,7 @@
-﻿using GraphQL.Authorization;
-using GraphQL.Server;
-using GraphQL.Server.Authorization.AspNetCore;
+﻿using GraphQL.Server;
 using GraphQL.Types;
 using GraphQL.Validation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace PawPadIO.Hub.API.ServiceDescriptors
 {
@@ -43,10 +40,9 @@ namespace PawPadIO.Hub.API.ServiceDescriptors
                 // TODO: This is our issue here, this is not populated with the user's claims and authenticated despite having the valid header
                 // Do we need to somehow invoke the "token" Authentication Scheme manually?
 
-                return new PawPadIO.Hub.GraphQL.UserContext
-                {
-                    User = context.User
-                };
+                var graphQLUserContext = new GraphQL.UserContext(context.User);
+
+                return graphQLUserContext;
             })
             .AddWebSockets();
         }

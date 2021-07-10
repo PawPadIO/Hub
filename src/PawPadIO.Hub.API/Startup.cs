@@ -79,6 +79,9 @@ namespace PawPadIO.Hub.API
 
                 options.Events = new JwtBearerEvents
                 {
+                    OnAuthenticationFailed = PawPadIOJwtBearerEvents.OnAuthenticationFailed,
+                    OnChallenge = PawPadIOJwtBearerEvents.OnChallenge,
+                    OnForbidden = PawPadIOJwtBearerEvents.OnForbidden,
                     OnTokenValidated = PawPadIOJwtBearerEvents.OnTokenValidated,
                 };
             });

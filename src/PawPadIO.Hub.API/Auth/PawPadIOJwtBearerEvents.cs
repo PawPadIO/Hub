@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,9 +8,9 @@ using PawPadIO.Hub.Domain.Services;
 
 namespace PawPadIO.Hub.API.Auth
 {
-    public class PawPadIOJwtBearerEvents
+    internal class PawPadIOJwtBearerEvents
     {
-        public static async Task OnTokenValidated(TokenValidatedContext context)
+        internal static async Task OnTokenValidated(TokenValidatedContext context)
         {
             var userService = context.HttpContext.RequestServices.GetService<IUserService<HubUser>>();
 
@@ -29,6 +30,24 @@ namespace PawPadIO.Hub.API.Auth
 
                 await userService.CreateUserAsync(user);
             }
+        }
+
+        internal static Task OnAuthenticationFailed(AuthenticationFailedContext arg)
+        {
+            Debug.WriteLine("Authentication failed");
+            return Task.CompletedTask;
+        }
+
+        internal static Task OnChallenge(JwtBearerChallengeContext arg)
+        {
+            Debug.WriteLine("Not authentication, challenge triggered");
+            return Task.CompletedTask;
+        }
+
+        internal static Task OnForbidden(ForbiddenContext arg)
+        {
+            Debug.WriteLine("Access forbidden");
+            return Task.CompletedTask;
         }
     }
 }
