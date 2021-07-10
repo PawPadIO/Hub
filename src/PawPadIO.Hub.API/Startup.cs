@@ -18,6 +18,7 @@ using PawPadIO.Hub.API.ServiceDescriptors;
 using PawPadIO.Hub.Domain.Data;
 using PawPadIO.Hub.Domain.Models;
 using PawPadIO.Hub.Domain.Services;
+using PawPadIO.Hub.GraphQL.Types;
 
 namespace PawPadIO.Hub.API
 {
@@ -36,6 +37,7 @@ namespace PawPadIO.Hub.API
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<IUserService<HubUser>, PawPadIOUserService>();
+            services.AddTransient<HubUserType>();
 
             // Use the JWT standard claim names, not the silly xmlsoap URIs
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
