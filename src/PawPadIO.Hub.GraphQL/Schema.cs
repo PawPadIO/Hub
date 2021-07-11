@@ -1,6 +1,7 @@
 ﻿using System;
 
 using GraphQL.Utilities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace PawPadIO.Hub.GraphQL
 { 
@@ -9,8 +10,8 @@ namespace PawPadIO.Hub.GraphQL
         public Schema(IServiceProvider provider) : base(provider)
         {
             Query = provider.GetRequiredService<Query>();
-            Mutation = provider.GetRequiredService<Mutation>();
-            Subscription = provider.GetRequiredService<Subscription>();
+            //Mutation = provider.GetRequiredService<Mutation>();
+            //Subscription = provider.GetRequiredService<Subscription>();
         }
     }
 }

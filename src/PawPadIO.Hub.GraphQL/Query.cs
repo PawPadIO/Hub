@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using GraphQL.Authorization;
+using GraphQL;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;

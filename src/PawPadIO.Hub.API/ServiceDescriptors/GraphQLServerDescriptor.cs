@@ -26,7 +26,8 @@ namespace PawPadIO.Hub.API.ServiceDescriptors
             })
             .AddSystemTextJson(deserializerSettings => { }, serializerSettings => { })
             .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = exposeDebugInfo)
-            //.AddGraphQLAuthorization(options =>
+            .AddGraphQLAuthorization()
+            //    options =>
             //{
             //    options.AddPolicy("graphql", policy => // Just a test one
             //    {
